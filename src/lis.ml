@@ -21,6 +21,30 @@ let tokenize (chars: string) : string list =
   |> String.split_on_char ' '
   |> List.filter (fun c -> c <> "")
 
+let atom token =
+  List.map
+    (fun s ->
+      let int' = int_of_string_opt s in
+      match int' with
+        None ->
+         (match float_of_string_opt s with
+          | None -> Symbol s
+          | Some v -> Floating v)
+      | Some v -> Number v) token
+
+let rec read_from_tokens tokens =
+  match tokens with
+    [] -> failwith "Unexpected EOF"
+  (* | [x] -> TODO Incestigate to simplify this sphagetti code furthur *)
+  | h :: t -> if h = "(" then
+                read_from_tokens t
+              else if h = ")" then
+                failwith "Syntax Error: Unxpected )"
+              else atom t
+
+let parse p =
+  read_from_tokens (tokenize p)
+
 let () =
   let program = "(begin (define r 10) (* pi (* r r)))" in
-  tokenize program
+  parse program
