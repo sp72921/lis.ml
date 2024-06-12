@@ -45,6 +45,6 @@ let rec read_from_tokens tokens =
 let parse p =
   read_from_tokens (tokenize p)
 
-let () =
+let _ =
   let program = "(begin (define r 10) (* pi (* r r)))" in
   parse program
