@@ -1,0 +1,3 @@
+* Lis.ml
+Peter Norvig's [[https://www.norvig.com/lispy.html][lis.py]] written in ocaml. This repository is a personal
+project created for learning purposes.
