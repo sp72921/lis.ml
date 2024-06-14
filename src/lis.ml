@@ -64,6 +64,22 @@ let rec read_from_tokens tokens =
 let parse p =
   read_from_tokens (tokenize p) |> List.map (List.map atom)
 
+type paren =
+  { str: (char * char);
+    mutable count: int}
+
+let check_parens l =
+  let paren' = {str = ('(', ')'); count = 0} in
+  String.iter
+    (fun a ->
+      if Char.equal a (fst paren'.str) then
+        (paren'.count <- paren'.count + 1;
+         Printf.printf "%d " paren'.count)
+      else if Char.equal a (snd paren'.str) then
+        (paren'.count <- paren'.count - 1;
+         Printf.printf "%d " paren'.count)
+    ) l
+
 let _ =
   let program = "(begin (define r 10) (* pi (* r r)))" in
   parse program
