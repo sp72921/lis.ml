@@ -80,6 +80,14 @@ let check_parens l =
          Printf.printf "%d " paren'.count)
     ) l
 
-let _ =
+let print_atom_lists l =
+  List.iter
+    (List.iter (fun a ->
+         match a with
+         | Symbol s -> Printf.printf "Symbol: %s\n" s
+         | Number n -> Printf.printf "Number: %d\n" n
+         | Floating f -> Printf.printf "Floating: %f\n" f)) l
+
+let () =
   let program = "(begin (define r 10) (* pi (* r r)))" in
-  parse program
+  parse program |> print_atom_lists
