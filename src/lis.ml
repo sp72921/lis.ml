@@ -52,13 +52,15 @@ let rec read_from_tokens tokens =
   | [] -> []
   | h :: t ->
      if String.equal h "(" then
-       (match find_opt "(" t with
-        | None ->
-           (match find_opt ")" t with
-            | None -> failwith "UNMATCHED `)'"
-            | Some v -> (take v t) :: read_from_tokens t
-           )
-        | Some n -> (take n t) :: read_from_tokens t)
+       let l = find_opt "(" t in
+       let r = find_opt ")" t in
+       let l_opt = Option.is_some l in
+       if l_opt then (
+         if l < r then
+           take (Option.get l) t :: read_from_tokens t
+         else (take (Option.get l - 1) t) :: read_from_tokens t
+       )
+       else take (Option.get r) t :: read_from_tokens t
      else read_from_tokens t
 
 let parse p =
