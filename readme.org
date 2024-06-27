@@ -1,3 +1,28 @@
 * Lis.ml
 Peter Norvig's [[https://www.norvig.com/lispy.html][lis.py]] written in ocaml. This repository is a personal
 project created for learning purposes.
+
+* Build
+Use [[https://dune.build][dune]] to build the project
+#+begin_example
+opam exec -- dune build
+opam exec -- dune run ./bin/main.exe # start a repl
+#+end_example
+
+* Demonstration
+It has a basic REPL and parser, but it's still an early WIP
+#+begin_example
+> dune exec ./bin/main.exe
+user> (begin (define r 10) (* pi (* r r)))
+Symbol: begin
+Symbol: define
+Symbol: r
+Number: 10
+Symbol: *
+Symbol: pi
+Symbol: *
+Symbol: r
+Symbol: r
+user>
+#+end_example
+

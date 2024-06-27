@@ -18,69 +18,57 @@ let tokenize (chars: string) : string list =
   |> List.filter (fun c -> c <> "")
 
 let atom token =
-  let int' = int_of_string_opt token in
-  match int' with
+  match int_of_string_opt token with
     None ->
      (match float_of_string_opt token with
       | None -> Symbol token
       | Some v -> Floating v)
   | Some v -> Number v
 
-let rec find_opt x lst =
-    match lst with
-    | [] -> None
-    | h :: t -> if x = h
-                then Some 0 else
-                  match find_opt x t with
-                  | None -> None
-                  | Some idx -> Some (idx + 1)
-
-let rec take n lst =
-  if n = 0 then [] else
-    match lst with
-    | [] -> []
-    | h :: t -> h :: take (n - 1) t
-
-let rec drop n l =
-  if n = 0 then l
-  else match l with
-       | [] -> []
-       | h :: t -> drop (n - 1) t
-
 let rec read_from_tokens tokens =
   match tokens with
   | [] -> []
-  | h :: t ->
-     if String.equal h "(" then
-       let l = find_opt "(" t in
-       let r = find_opt ")" t in
+  | "(" :: t ->
+       let l = Util.find_opt "(" t in
+       let r = Util.find_opt ")" t in
        let l_opt = Option.is_some l in
-       if l_opt then (
-         if l < r then
-           take (Option.get l) t :: read_from_tokens t
-         else (take (Option.get l - 1) t) :: read_from_tokens t
-       )
-       else take (Option.get r) t :: read_from_tokens t
-     else read_from_tokens t
+       if l_opt then
+         (if l < r then
+            Util.take (Option.get l) t :: read_from_tokens t
+          else (Util.take (Option.get l - 1) t) :: read_from_tokens t)
+       else Util.take (Option.get r) t :: read_from_tokens t
+  | _ :: t -> read_from_tokens t
 
 let parse p =
   read_from_tokens (tokenize p) |> List.map (List.map atom)
 
 type paren =
   { str: (char * char);
-    mutable count: int}
+    match_it: (string * string);
+    mutable count: int;
+    is_balanced: (int -> bool);
+    (* mutable pos: int *)
+  }
 
 let check_parens l =
-  let paren' = {str = ('(', ')'); count = 0} in
-  String.iter
-    (fun a ->
-      if Char.equal a (fst paren'.str) then
-        (paren'.count <- paren'.count + 1;
-         Printf.printf "%d " paren'.count)
-      else if Char.equal a (snd paren'.str) then
-        (paren'.count <- paren'.count - 1;
-         Printf.printf "%d " paren'.count)
-    ) l
+  let p =
+    {str = ('(', ')');
+     match_it = ("(", ")");
+     count = 0;
+     is_balanced = (fun n -> n = 0)} in
+  match
+    String.starts_with ~prefix:(fst p.match_it) l
+    && String.ends_with ~suffix:(snd p.match_it) l
+  with
+  | true ->
+     String.iter
+       (fun a ->
+         if Char.equal a (fst p.str) then
+           p.count <- p.count + 1
+         else if Char.equal a (snd p.str) then
+           p.count <- p.count - 1) l;
+     (p.is_balanced (p.count))
+  | false -> false
 
 let print_atom_lists l =
   List.iter
@@ -90,6 +78,3 @@ let print_atom_lists l =
          | Number n -> Printf.printf "Number: %d\n" n
          | Floating f -> Printf.printf "Floating: %f\n" f)) l
 
-let () =
-  let program = "(begin (define r 10) (* pi (* r r)))" in
-  parse program |> print_atom_lists
